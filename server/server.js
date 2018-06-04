@@ -1,6 +1,7 @@
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todo');
 const {Users} = require('./models/users');
+const {ObjectID} = require('mongodb');
 
 const express = require('express');
 const bodyParser = require('body-parser');  //express json parsing middleware
@@ -13,6 +14,7 @@ app.listen(3000,() => {
 
 app.use(bodyParser.json());
 
+//Adding Todos
 app.post('/todos',(req,res) => {
 
     var newTodo = new Todo({
@@ -27,4 +29,33 @@ app.post('/todos',(req,res) => {
     });
 });
 
+//Displaying Todos
+app.get('/todos',(req,res) => {
 
+    Todo.find().then((docs) => {
+        console.log('Received a get request');
+        res.send({docs});
+    },(err) => {
+        res.status(400).send(err);
+    });
+});
+
+//Finding specific doc
+app.get('/todos/:id',(req,res) => {
+
+    id = req.params.id;
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send('Id not valid');
+    }
+
+    Todo.findById(id).then((todo) => {
+        if(!todo) {
+            return res.status(404).send();
+        }
+        res.send({todo});
+    },(err) => {
+        res.status(400).send();
+    });
+
+});
